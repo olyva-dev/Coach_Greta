@@ -14,3 +14,7 @@ Supabase CLI commands (link, db push, functions deploy) are run from there.
 The production Supabase project (org "Carlos Labs", free tier):
 * project ref: `eoikbitmgiwxmjslejhm`
 * URL: `https://eoikbitmgiwxmjslejhm.supabase.co`
+
+The app is deployed on Vercel at `https://coach-greta.vercel.app`.
+The owner signs in as `caalpater@gmail.com`. Password resets are done in the
+Supabase dashboard, the app has no email recovery flow on purpose.
