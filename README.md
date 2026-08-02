@@ -12,9 +12,15 @@ Three kinds of items, all managed from inside the app:
 * **Challenges**: progressive daily targets where the amount depends on the
   day number (day 2 is 2 squats, day 15 is 15). Linear, fixed or custom
   ladders, calendar based so pausing never shifts the target.
-* **Habits**: a daily yes/no checklist. A habit is either a goal ("gym") or
-  something to avoid ("sugar"): avoid habits count as a win when you never
-  check them.
+* **Habits**: the daily checklist. A habit is either a goal ("gym") or
+  something to avoid ("sugar"), and it is tracked either as yes/no or as a
+  number you record ("10,000 steps"). Schedules are days of the week or a
+  repeating cycle like "3 days on, 1 off". Avoid habits count as a win when
+  you never check them.
+
+Everything you close out earns XP, which drives a level, streak badges and a
+count of perfect days. It is derived from your real logs, so it can never
+drift out of sync with the history.
 
 Reminders fire even when the app is closed on every device: pg_cron inside
 Supabase calls an Edge Function every minute, which claims due occurrences
@@ -157,6 +163,17 @@ Finish with Settings → Send test push on each device.
 * **Avoid habits** ("did I eat sugar"): an untouched day counts as a win,
   you only tap when you slipped. Turn on "require a daily confirmation" per
   habit to make silence break the streak instead.
+* **Numeric habits** ("10,000 steps") record an amount, not a checkmark. A
+  day counts as a win when the amount reaches the target. Amounts often
+  arrive late, so Progress has a "catch up" panel covering the last seven
+  days where any day can be filled in after the fact.
+* **Cycle schedules** ("gym 3 days on, 1 off") repeat from an anchor date
+  instead of following the calendar week. Change the anchor date any time
+  to resync the cycle to how you are actually training, without losing
+  history.
+* **XP and levels**: 10 XP per habit win, 15 per challenge day, 5 per
+  reminder done, 25 per perfect day. Each level costs 100 XP more than the
+  last. A perfect day is one where every scheduled habit was won.
 * **Challenge day numbers are calendar based**: day = date minus start date
   plus one. Pausing hides a challenge from Today but never shifts the ladder.
 * **Missed**: a reminder occurrence you never touched is marked missed at

@@ -59,13 +59,21 @@ export function OccurrenceList({ dueNow, laterToday, resolved, focusId }: Props)
   return (
     <div className="flex flex-col gap-6">
       <section>
-        <h2 className="mb-2 text-sm font-semibold text-muted-foreground">
-          Due now
+        <h2 className="mb-2.5 flex items-center gap-2 text-base font-semibold">
+          <span className="h-4 w-1 rounded-full bg-primary" /> Due now
+          {visibleDue.length > 0 && (
+            <span className="rounded-full bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
+              {visibleDue.length}
+            </span>
+          )}
         </h2>
         {visibleDue.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-            Nothing due right now
-          </p>
+          <div className="rounded-xl border border-dashed border-border bg-surface/50 px-4 py-8 text-center">
+            <p className="text-2xl">🎉</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              All caught up, nothing due right now
+            </p>
+          </div>
         ) : (
           <div className="flex flex-col gap-2">
             {visibleDue.map((item) => {
@@ -79,11 +87,11 @@ export function OccurrenceList({ dueNow, laterToday, resolved, focusId }: Props)
                   key={occurrence.id}
                   ref={isFocus ? focusRef : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg border border-border bg-surface p-3 animate-fade-in-up",
+                    "flex items-center gap-3 rounded-xl border border-primary/25 bg-gradient-to-r from-primary/10 to-surface p-3 animate-fade-in-up",
                     isFocus && "ring-2 ring-ring"
                   )}
                 >
-                  <span className="text-2xl leading-none">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary/15 text-2xl">
                     {reminder.emoji ?? "⏰"}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -119,10 +127,11 @@ export function OccurrenceList({ dueNow, laterToday, resolved, focusId }: Props)
 
       {laterToday.filter((o) => !optimistic.has(o.occurrence.id)).length > 0 && (
         <section>
-          <h2 className="mb-2 text-sm font-semibold text-muted-foreground">
+          <h2 className="mb-2.5 flex items-center gap-2 text-base font-semibold">
+            <span className="h-4 w-1 rounded-full bg-muted-foreground/40" />{" "}
             Later today
           </h2>
-          <div className="flex flex-col divide-y divide-border rounded-lg border border-border bg-surface">
+          <div className="flex flex-col divide-y divide-border rounded-xl border border-border bg-surface">
             {laterToday
               .filter((o) => !optimistic.has(o.occurrence.id))
               .map(({ occurrence, reminder, timeLabel }) => (
@@ -155,10 +164,11 @@ export function OccurrenceList({ dueNow, laterToday, resolved, focusId }: Props)
 
       {(resolved.length > 0 || optimisticallyResolved.length > 0) && (
         <section>
-          <h2 className="mb-2 text-sm font-semibold text-muted-foreground">
+          <h2 className="mb-2.5 flex items-center gap-2 text-base font-semibold">
+            <span className="h-4 w-1 rounded-full bg-muted-foreground/40" />{" "}
             Earlier today
           </h2>
-          <div className="flex flex-col divide-y divide-border rounded-lg border border-border bg-surface">
+          <div className="flex flex-col divide-y divide-border rounded-xl border border-border bg-surface/60">
             {[...resolved, ...optimisticallyResolved].map(
               ({ occurrence, reminder, timeLabel }) => {
                 const status =

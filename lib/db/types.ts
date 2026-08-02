@@ -96,6 +96,9 @@ export type ChallengeLog = {
   created_at: string;
 }
 
+export type HabitKind = "boolean" | "numeric";
+export type HabitScheduleKind = "days_of_week" | "cycle";
+
 export type Habit = {
   id: string;
   user_id: string;
@@ -104,6 +107,13 @@ export type Habit = {
   polarity: HabitPolarity;
   days_of_week: number[];
   require_explicit_check: boolean;
+  kind: HabitKind;
+  target_value: number | null;
+  unit: string | null;
+  schedule_kind: HabitScheduleKind;
+  cycle_on_days: number | null;
+  cycle_off_days: number | null;
+  cycle_anchor_date: string | null;
   status: ItemStatus;
   sort_order: number;
   created_at: string;
@@ -116,6 +126,7 @@ export type HabitLog = {
   habit_id: string;
   local_date: string;
   value: boolean;
+  amount: number | null;
   logged_at: string;
 }
 

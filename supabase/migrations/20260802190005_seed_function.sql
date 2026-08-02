@@ -53,9 +53,20 @@ begin
   insert into public.habits
     (user_id, name, emoji, polarity, sort_order)
   values
-    (p_user, 'No sugar', '🍬', 'negative', 0),
-    (p_user, 'Gym', '🏋️', 'positive', 1),
-    (p_user, '10,000 steps', '👟', 'positive', 2);
+    (p_user, 'No sugar', '🍬', 'negative', 0);
+
+  -- gym runs on a 3 days on, 1 day off cycle rather than fixed weekdays
+  insert into public.habits
+    (user_id, name, emoji, polarity, sort_order,
+     schedule_kind, cycle_on_days, cycle_off_days, cycle_anchor_date)
+  values
+    (p_user, 'Gym', '🏋️', 'positive', 1, 'cycle', 3, 1, v_today);
+
+  -- steps are recorded as a number, often a day or two late
+  insert into public.habits
+    (user_id, name, emoji, polarity, sort_order, kind, target_value, unit)
+  values
+    (p_user, '10,000 steps', '👟', 'positive', 2, 'numeric', 10000, 'steps');
 
   perform public.maintain_schedules();
 

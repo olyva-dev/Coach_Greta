@@ -35,10 +35,10 @@ export default async function RemindersPage() {
   const reminders = data ?? [];
 
   return (
-    <div className="flex flex-col gap-4 py-6">
+    <div className="mx-auto w-full max-w-2xl flex flex-col gap-4 py-6">
       <BackLink href="/manage" />
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Reminders</h1>
+        <h1 className="text-3xl font-bold">Reminders</h1>
         <ReminderForm
           trigger={
             <Button size="sm">

@@ -5,6 +5,7 @@ import { HabitForm } from "@/components/manage/habit-form";
 import { StatusActions, StatusBadge } from "@/components/manage/shared";
 import { Button } from "@/components/ui/button";
 import { BackLink } from "@/components/back-link";
+import { describeSchedule } from "@/lib/domain/habits";
 
 export const metadata = { title: "Habits" };
 export const dynamic = "force-dynamic";
@@ -19,10 +20,10 @@ export default async function HabitsPage() {
   const habits = data ?? [];
 
   return (
-    <div className="flex flex-col gap-4 py-6">
+    <div className="mx-auto w-full max-w-2xl flex flex-col gap-4 py-6">
       <BackLink href="/manage" />
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Habits</h1>
+        <h1 className="text-3xl font-bold">Habits</h1>
         <HabitForm
           trigger={
             <Button size="sm">
@@ -52,10 +53,14 @@ export default async function HabitsPage() {
                       {h.name} <StatusBadge status={h.status} />
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {h.polarity === "positive" ? "goal" : "avoid"}
+                      {h.kind === "numeric"
+                        ? `target ${(h.target_value ?? 0).toLocaleString()} ${h.unit ?? ""}`
+                        : h.polarity === "positive"
+                          ? "goal"
+                          : "avoid"}
                       {h.require_explicit_check && " · daily confirmation"}
-                      {h.days_of_week.length < 7 &&
-                        ` · ${h.days_of_week.length} days a week`}
+                      {" · "}
+                      {describeSchedule(h)}
                     </p>
                   </button>
                 }

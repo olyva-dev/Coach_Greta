@@ -1,7 +1,19 @@
 import { addDays, format, isBefore, parseISO, startOfWeek, subDays } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import { localDateOf, localToday } from "@/lib/domain/schedule";
-import { computeStreak, dayOutcome, type DayOutcome } from "@/lib/domain/streaks";
+import {
+  computeStreak,
+  dayOutcome,
+  type DayOutcome,
+  type LoggedDay,
+} from "@/lib/domain/streaks";
+import {
+  levelFromXp,
+  streakBadges,
+  totalXp,
+  type Badge,
+  type Level,
+} from "@/lib/domain/gamification";
 import { dayNumber, targetForDay } from "@/lib/domain/challenge";
 import type { Challenge, Habit, Profile, Reminder } from "@/lib/db/types";
 
@@ -19,6 +31,9 @@ export interface HabitProgress {
   cells: HeatmapCell[];
   weekWins: number;
   weekPossible: number;
+  // last 14 scheduled days, for the numeric bar spark
+  recentAmounts: number[];
+  recentHits: boolean[];
 }
 
 export interface ChallengeProgress {
@@ -45,6 +60,11 @@ export interface ProgressData {
   habits: HabitProgress[];
   challenges: ChallengeProgress[];
   reminders: ReminderAdherence[];
+  level: Level;
+  xp: number;
+  badges: Badge[];
+  perfectDays: number;
+  bestStreak: number;
 }
 
 export async function getProgressData(): Promise<ProgressData> {
@@ -93,18 +113,18 @@ export async function getProgressData(): Promise<ProgressData> {
     ]);
 
   // habits
-  const logsByHabit = new Map<string, Map<string, boolean>>();
+  const logsByHabit = new Map<string, Map<string, LoggedDay>>();
   for (const log of habLogRes.data ?? []) {
     let m = logsByHabit.get(log.habit_id);
     if (!m) {
       m = new Map();
       logsByHabit.set(log.habit_id, m);
     }
-    m.set(log.local_date, log.value);
+    m.set(log.local_date, { value: log.value, amount: log.amount });
   }
 
   const habits: HabitProgress[] = (habRes.data ?? []).map((habit) => {
-    const logs = logsByHabit.get(habit.id) ?? new Map<string, boolean>();
+    const logs = logsByHabit.get(habit.id) ?? new Map<string, LoggedDay>();
     const created = localDateOf(habit.created_at, profile.timezone);
     const from = created > gridStart ? created : gridStart;
 
@@ -134,7 +154,20 @@ export async function getProgressData(): Promise<ProgressData> {
       cursor = addDays(cursor, 1);
     }
 
-    return { habit, current, best, cells, weekWins, weekPossible };
+    const recent = cells.slice(-14);
+    const recentAmounts = recent.map((c) => logs.get(c.date)?.amount ?? 0);
+    const recentHits = recent.map((c) => c.outcome === "win");
+
+    return {
+      habit,
+      current,
+      best,
+      cells,
+      weekWins,
+      weekPossible,
+      recentAmounts,
+      recentHits,
+    };
   });
 
   // challenges
@@ -181,5 +214,57 @@ export async function getProgressData(): Promise<ProgressData> {
     };
   });
 
-  return { profile, today, weekStart, habits, challenges, reminders };
+  // gamification, all derived from the logs above
+  const habitWins = habits.reduce(
+    (sum, h) => sum + h.cells.filter((c) => c.outcome === "win").length,
+    0
+  );
+  const challengeDays = (chLogRes.data ?? []).filter(
+    (l) => l.status === "done" || l.status === "partial"
+  ).length;
+  const remindersDone = (occRes.data ?? []).filter(
+    (o) => o.status === "done"
+  ).length;
+
+  // a perfect day needs every scheduled habit won on that date
+  const perfectDays = (() => {
+    if (habits.length === 0) return 0;
+    const dates = habits[0].cells.map((c) => c.date);
+    let count = 0;
+    for (const date of dates) {
+      let scheduled = 0;
+      let wins = 0;
+      for (const h of habits) {
+        const cell = h.cells.find((c) => c.date === date);
+        if (!cell || cell.outcome === "neutral" || cell.outcome === "before")
+          continue;
+        scheduled += 1;
+        if (cell.outcome === "win") wins += 1;
+      }
+      if (scheduled > 0 && wins === scheduled) count += 1;
+    }
+    return count;
+  })();
+
+  const xp = totalXp({
+    habitWins,
+    challengeDays,
+    remindersDone,
+    perfectDays,
+  });
+  const bestStreak = habits.reduce((max, h) => Math.max(max, h.best), 0);
+
+  return {
+    profile,
+    today,
+    weekStart,
+    habits,
+    challenges,
+    reminders,
+    level: levelFromXp(xp),
+    xp,
+    badges: streakBadges(bestStreak),
+    perfectDays,
+    bestStreak,
+  };
 }

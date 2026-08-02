@@ -46,23 +46,37 @@ export default async function ManagePage() {
     },
   ];
 
+  const accents = [
+    { chip: "bg-primary/15 text-primary", border: "hover:border-primary/40" },
+    { chip: "bg-accent/15 text-accent", border: "hover:border-accent/40" },
+    { chip: "bg-gold/15 text-gold", border: "hover:border-gold/40" },
+  ];
+
   return (
     <div className="flex flex-col gap-6 py-6">
-      <h1 className="text-2xl font-bold">Manage</h1>
-      <div className="flex flex-col gap-2">
-        {sections.map(({ href, icon: Icon, title, description, count }) => (
+      <h1 className="text-3xl font-bold">Manage</h1>
+      <div className="grid gap-3 lg:grid-cols-3">
+        {sections.map(({ href, icon: Icon, title, description, count }, i) => (
           <Link
             key={href}
             href={href}
-            className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4 transition-colors hover:bg-surface-raised"
+            className={`flex items-center gap-4 rounded-xl border border-border bg-surface p-4 transition-colors hover:bg-surface-raised lg:flex-col lg:items-start lg:gap-3 lg:p-5 ${accents[i].border}`}
           >
-            <Icon className="size-5 text-primary" />
+            <span
+              className={`grid size-11 shrink-0 place-items-center rounded-xl ${accents[i].chip}`}
+            >
+              <Icon className="size-5" />
+            </span>
             <div className="min-w-0 flex-1">
-              <p className="font-medium">{title}</p>
+              <p className="font-semibold">
+                {title}{" "}
+                <span className="ml-1 text-sm font-normal text-muted-foreground">
+                  {count}
+                </span>
+              </p>
               <p className="text-xs text-muted-foreground">{description}</p>
             </div>
-            <span className="text-sm text-muted-foreground">{count}</span>
-            <ChevronRight className="size-4 text-muted-foreground" />
+            <ChevronRight className="size-4 text-muted-foreground lg:hidden" />
           </Link>
         ))}
       </div>

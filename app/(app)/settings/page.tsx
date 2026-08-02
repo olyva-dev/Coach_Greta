@@ -27,8 +27,8 @@ export default async function SettingsPage() {
   if (!user || !profile) return null;
 
   return (
-    <div className="flex flex-col gap-4 py-6">
-      <h1 className="text-2xl font-bold">Settings</h1>
+    <div className="mx-auto w-full max-w-2xl flex flex-col gap-4 py-6">
+      <h1 className="text-3xl font-bold">Settings</h1>
       <NotificationsPanel subscriptions={subscriptions ?? []} />
       <ProfileForm profile={profile} />
       <MfaPanel />

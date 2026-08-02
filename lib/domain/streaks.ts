@@ -1,11 +1,18 @@
 import { addDays, format, parseISO } from "date-fns";
 import type { Habit } from "@/lib/db/types";
+import { isScheduledOn } from "@/lib/domain/habits";
 
 export type DayOutcome = "win" | "lose" | "neutral";
 
-// Value semantics: a habit log's `value` records what the checkbox said,
-// true = "I did the thing named by the habit". For a negative habit
-// ("did I eat sugar") true is therefore the slip.
+export interface LoggedDay {
+  value: boolean;
+  amount: number | null;
+}
+
+// Value semantics: a habit log's `value` records "this day counts as done".
+// For a positive boolean habit that is the checkbox. For a negative habit
+// ("did I eat sugar") value true is the slip. For a numeric habit the app
+// sets value from amount >= target when logging.
 //
 // Outcome rules:
 //   positive habit:  logged true -> win, logged false -> lose,
@@ -13,24 +20,24 @@ export type DayOutcome = "win" | "lose" | "neutral";
 //   negative habit:  logged true -> lose, logged false -> win,
 //                    unlogged past day -> win (you never reported a slip),
 //                    unlogged today -> provisional win
-//   negative + require_explicit_check: unlogged past day -> lose
-//                    (the habit demands a daily confirmation),
+//   negative + require_explicit_check: unlogged past day -> lose,
 //                    unlogged today -> neutral
-//   any day the habit is not scheduled (days_of_week) -> neutral
+//   any day the habit is not scheduled -> neutral
 export function dayOutcome(
   habit: Habit,
   localDate: string,
   today: string,
-  logged: boolean | undefined
+  logged: LoggedDay | boolean | undefined
 ): DayOutcome {
-  const dow = parseISO(localDate).getDay();
-  if (!habit.days_of_week.includes(dow)) return "neutral";
+  if (!isScheduledOn(habit, localDate)) return "neutral";
 
   const isToday = localDate === today;
+  const value =
+    typeof logged === "boolean" ? logged : logged ? logged.value : undefined;
 
-  if (logged !== undefined) {
-    if (habit.polarity === "positive") return logged ? "win" : "lose";
-    return logged ? "lose" : "win";
+  if (value !== undefined) {
+    if (habit.polarity === "positive") return value ? "win" : "lose";
+    return value ? "lose" : "win";
   }
 
   // unlogged
@@ -44,11 +51,11 @@ export interface StreakResult {
   best: number;
 }
 
-// logsByDate: local_date -> value. `from` bounds the scan (habit creation
-// date works well); both bounds inclusive, dates as yyyy-MM-dd.
+// logsByDate: local_date -> logged day. `from` bounds the scan (habit
+// creation date works well); both bounds inclusive, dates as yyyy-MM-dd.
 export function computeStreak(
   habit: Habit,
-  logsByDate: ReadonlyMap<string, boolean>,
+  logsByDate: ReadonlyMap<string, LoggedDay | boolean>,
   from: string,
   today: string
 ): StreakResult {

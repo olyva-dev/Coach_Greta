@@ -47,9 +47,13 @@ export function SideNav() {
   const pathname = usePathname();
   return (
     <nav className="hidden md:flex md:w-56 md:flex-col md:gap-1 md:border-r md:border-border md:p-4 md:shrink-0">
-      <div className="flex items-center gap-2 px-3 pb-6 pt-2">
-        <span className="text-xl">🏃‍♀️</span>
-        <span className="font-bold">Coach Greta</span>
+      <div className="flex items-center gap-2.5 px-3 pb-8 pt-2">
+        <span className="grid size-9 place-items-center rounded-xl bg-primary/15 text-lg">
+          🏃‍♀️
+        </span>
+        <span className="font-bold [font-family:var(--font-display)] tracking-tight">
+          Coach Greta
+        </span>
       </div>
       {items.map(({ href, label, icon: Icon }) => {
         const active = pathname.startsWith(href);
@@ -58,9 +62,9 @@ export function SideNav() {
             key={href}
             href={href}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
               active
-                ? "bg-surface-raised text-primary"
+                ? "bg-primary/12 text-primary"
                 : "text-muted-foreground hover:bg-surface-raised hover:text-foreground"
             )}
           >

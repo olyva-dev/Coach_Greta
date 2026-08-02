@@ -45,8 +45,8 @@ export function ChallengeList({ challenges, today }: Props) {
 
   return (
     <section>
-      <h2 className="mb-2 text-sm font-semibold text-muted-foreground">
-        Challenges
+      <h2 className="mb-2.5 flex items-center gap-2 text-base font-semibold">
+        <span className="h-4 w-1 rounded-full bg-accent" /> Challenges
       </h2>
       <div className="flex flex-col gap-2">
         {challenges.map((item) => {
@@ -58,46 +58,22 @@ export function ChallengeList({ challenges, today }: Props) {
           return (
             <div
               key={challenge.id}
-              className="rounded-lg border border-border bg-surface p-3"
+              className="rounded-xl border border-accent/25 bg-gradient-to-r from-accent/10 to-surface p-3"
             >
               <div className="flex items-center gap-3">
+                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-accent/15 text-lg font-bold text-accent">
+                  {day}
+                </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{challenge.name}</p>
                   <p className="text-xs text-muted-foreground">
                     Day {day} of {challenge.duration_days}
                   </p>
                 </div>
-                {target === null ? (
-                  <Badge variant="muted">Rest day</Badge>
-                ) : status === null ? (
+                {target === null && <Badge variant="muted">Rest day</Badge>}
+                {status !== null && status !== undefined && (
                   <>
-                    <span className="text-xl font-bold text-primary">
-                      {target}
-                    </span>
-                    <span className="mr-1 text-xs text-muted-foreground">
-                      {challenge.exercises.join(" + ")}
-                    </span>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      aria-label="Skip"
-                      onClick={() => set(item, "skipped")}
-                    >
-                      <X />
-                    </Button>
-                    <Button
-                      size="icon"
-                      aria-label="Done"
-                      onClick={() => set(item, "done")}
-                    >
-                      <Check />
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Badge
-                      variant={status === "done" ? "default" : "muted"}
-                    >
+                    <Badge variant={status === "done" ? "default" : "muted"}>
                       {status === "done"
                         ? `${target} ${challenge.unit} done`
                         : status}
@@ -113,6 +89,33 @@ export function ChallengeList({ challenges, today }: Props) {
                   </>
                 )}
               </div>
+              {target !== null && (status === null || status === undefined) && (
+                <div className="mt-3 flex items-center gap-3 border-t border-accent/15 pt-3">
+                  <p className="min-w-0 flex-1 text-sm">
+                    <span className="text-2xl font-bold text-accent">
+                      {target}
+                    </span>{" "}
+                    <span className="text-muted-foreground">
+                      {challenge.unit} · {challenge.exercises.join(" + ")}
+                    </span>
+                  </p>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    aria-label="Skip"
+                    onClick={() => set(item, "skipped")}
+                  >
+                    <X />
+                  </Button>
+                  <Button
+                    size="icon"
+                    aria-label="Done"
+                    onClick={() => set(item, "done")}
+                  >
+                    <Check />
+                  </Button>
+                </div>
+              )}
             </div>
           );
         })}

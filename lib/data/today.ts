@@ -6,6 +6,7 @@ import {
   isWithinChallenge,
   targetForDate,
 } from "@/lib/domain/challenge";
+import { isScheduledOn } from "@/lib/domain/habits";
 import type { Profile } from "@/lib/db/types";
 import type {
   TodayChallenge,
@@ -22,6 +23,10 @@ export interface TodayData {
   resolved: TodayOccurrence[];
   challenges: TodayChallenge[];
   habits: TodayHabit[];
+  // how much of today is closed out, 0..1
+  dayProgress: number;
+  doneCount: number;
+  totalCount: number;
 }
 
 export async function getTodayData(): Promise<TodayData> {
@@ -97,11 +102,25 @@ export async function getTodayData(): Promise<TodayData> {
       log: chLogs.get(c.id) ?? null,
     }));
 
-  const dow = new Date(`${today}T12:00:00`).getDay();
   const habLogs = new Map((habLogRes.data ?? []).map((l) => [l.habit_id, l]));
   const habits: TodayHabit[] = (habRes.data ?? [])
-    .filter((h) => h.days_of_week.includes(dow))
+    .filter((h) => isScheduledOn(h, today))
     .map((h) => ({ habit: h, log: habLogs.get(h.id) ?? null }));
+
+  // day completion: every reminder occurrence, challenge target and
+  // scheduled habit counts once
+  const habitDone = habits.filter(({ habit, log }) =>
+    habit.polarity === "negative" ? log === null || !log.value : log?.value === true
+  ).length;
+  const challengeDone = challenges.filter(
+    (c) => c.target === null || c.log !== null
+  ).length;
+  const reminderDone = occurrences.filter(
+    (o) => !open.has(o.occurrence.status)
+  ).length;
+
+  const totalCount = habits.length + challenges.length + occurrences.length;
+  const doneCount = habitDone + challengeDone + reminderDone;
 
   return {
     profile,
@@ -112,5 +131,8 @@ export async function getTodayData(): Promise<TodayData> {
     resolved,
     challenges,
     habits,
+    dayProgress: totalCount === 0 ? 0 : doneCount / totalCount,
+    doneCount,
+    totalCount,
   };
 }
