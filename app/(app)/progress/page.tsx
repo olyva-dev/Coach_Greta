@@ -1,10 +1,16 @@
-import { Flame, Trophy } from "lucide-react";
+import { Bell, CheckCheck, Flame, Lightbulb, Trophy } from "lucide-react";
 import { getProgressData } from "@/lib/data/progress";
 import { getBackfill } from "@/lib/data/habit-history";
 import { Heatmap, HeatmapLegend } from "@/components/progress/heatmap";
 import { Backfill } from "@/components/progress/backfill";
-import { ProgressRing } from "@/components/progress/ring";
-import { ArcGauge, BarSpark, GradientBar, StatTile } from "@/components/ui/stat";
+import {
+  BarSpark,
+  GradientBar,
+  LineChart,
+  ProgressRing,
+  RingGauge,
+  StatTile,
+} from "@/components/ui/stat";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata = { title: "Progress" };
@@ -42,7 +48,7 @@ export default async function ProgressPage() {
             <p className="text-sm text-muted-foreground">
               Level {data.level.level}
             </p>
-            <p className="text-gradient-lime metric mt-0.5 text-4xl font-bold">
+            <p className="metric mt-0.5 text-4xl font-bold text-volt">
               {data.level.title}
             </p>
           </div>
@@ -66,7 +72,7 @@ export default async function ProgressPage() {
           value={liveStreak}
           unit="days"
           label="Current streak"
-          accent="lime"
+          icon={<Flame />}
         >
           <p className="flex items-center gap-1 text-xs text-muted-foreground">
             <Flame className="size-3.5 text-gold" /> best ever{" "}
@@ -76,7 +82,7 @@ export default async function ProgressPage() {
         <StatTile
           value={`${Math.round(weekFraction * 100)}%`}
           label="Habit wins this week"
-          accent="primary"
+          icon={<CheckCheck />}
         >
           <GradientBar fraction={weekFraction} className="h-2" />
           <p className="text-xs text-muted-foreground">
@@ -86,18 +92,39 @@ export default async function ProgressPage() {
         <StatTile
           value={avgAdherence !== null ? `${avgAdherence}%` : "–"}
           label="Reminders done, 30 days"
-          accent="accent"
+          icon={<Bell />}
         />
         <StatTile
           value={data.perfectDays}
           unit="days"
           label="Perfect days"
-          accent="gold"
+          icon={<Trophy />}
         >
           <p className="text-xs text-muted-foreground">
             Everything closed, start to finish
           </p>
         </StatTile>
+      </div>
+
+      {/* weekly completion, one series so the title names it, no legend box */}
+      {data.weekSeries.length > 1 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Habit completion this week</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <LineChart points={data.weekSeries} labels={data.weekLabels} />
+          </CardContent>
+        </Card>
+      )}
+
+      {/* one computed line about the week */}
+      <div className="flex items-start gap-3 rounded-lg border border-volt/30 bg-volt/6 p-4">
+        <Lightbulb className="mt-0.5 size-5 shrink-0 text-volt" />
+        <div>
+          <p className="text-sm font-semibold">Today&apos;s insight</p>
+          <p className="mt-0.5 text-sm text-muted-foreground">{data.insight}</p>
+        </div>
       </div>
 
       {/* badges */}
@@ -138,7 +165,7 @@ export default async function ProgressPage() {
       {data.challenges.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <span className="h-4 w-1 rounded-full bg-accent" /> Challenges
+            <span className="h-4 w-1 rounded-full bg-volt" /> Challenges
           </h2>
           <div className="grid gap-3 lg:grid-cols-2">
             {data.challenges.map(
@@ -155,7 +182,7 @@ export default async function ProgressPage() {
                       <p className="text-xs text-muted-foreground">
                         {challenge.exercises.join(" + ")}
                       </p>
-                      <p className="metric mt-2 text-2xl font-bold text-lime">
+                      <p className="metric mt-2 text-2xl font-bold text-volt">
                         {totalVolume.toLocaleString()}
                         <span className="ml-1 font-sans text-xs font-normal text-muted-foreground">
                           {challenge.unit} total
@@ -178,7 +205,7 @@ export default async function ProgressPage() {
       {data.habits.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <span className="h-4 w-1 rounded-full bg-lime" /> Habits
+            <span className="h-4 w-1 rounded-full bg-volt" /> Habits
           </h2>
           <div className="grid gap-3 lg:grid-cols-2">
             {data.habits.map(
@@ -222,7 +249,7 @@ export default async function ProgressPage() {
       {data.reminders.length > 0 && (
         <section className="flex flex-col gap-3">
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <span className="h-4 w-1 rounded-full bg-primary" /> Reminders, last
+            <span className="h-4 w-1 rounded-full bg-volt" /> Reminders, last
             30 days
           </h2>
           <div className="grid gap-3 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
@@ -264,13 +291,17 @@ export default async function ProgressPage() {
               )}
             </div>
             {avgAdherence !== null && (
-              <Card className="hidden lg:block">
-                <CardContent className="p-4">
-                  <ArcGauge
+              <Card className="hidden lg:flex lg:items-center lg:justify-center">
+                <CardContent className="flex flex-col items-center gap-2 p-4">
+                  <RingGauge
                     fraction={avgAdherence / 100}
-                    label={`${avgAdherence}%`}
+                    value={`${avgAdherence}%`}
                     caption="Overall"
+                    size={140}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    across all reminders
+                  </p>
                 </CardContent>
               </Card>
             )}

@@ -15,6 +15,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   const [pending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
 
+  const [displayName, setDisplayName] = useState(profile.display_name ?? "");
   const [timezone, setTimezone] = useState(profile.timezone);
   const [quietEnabled, setQuietEnabled] = useState(
     profile.quiet_hours_start !== null
@@ -41,6 +42,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
     startTransition(async () => {
       try {
         await updateProfile({
+          displayName: displayName.trim() || null,
           timezone,
           quietHoursStart: quietEnabled ? quietStart : null,
           quietHoursEnd: quietEnabled ? quietEnd : null,
@@ -62,6 +64,15 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       </CardHeader>
       <CardContent>
         <form onSubmit={submit} className="flex flex-col gap-4">
+          <FormRow label="Your name">
+            <Input
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Carlos"
+              maxLength={40}
+            />
+          </FormRow>
+
           <FormRow label="Timezone">
             <Select
               value={timezone}

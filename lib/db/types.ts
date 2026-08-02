@@ -20,6 +20,7 @@ export type DeliveryStatus = "sent" | "failed";
 
 export type Profile = {
   id: string;
+  display_name: string | null;
   timezone: string;
   quiet_hours_start: string | null;
   quiet_hours_end: string | null;

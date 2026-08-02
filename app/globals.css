@@ -2,25 +2,24 @@
 
 :root {
   color-scheme: dark;
-  /* near black cards on a true dark page, like the reference */
-  --background: oklch(0.135 0.004 150);
-  --surface: oklch(0.185 0.006 150);
-  --surface-raised: oklch(0.235 0.008 150);
-  --border: oklch(0.28 0.008 150);
-  --foreground: oklch(0.96 0.004 150);
-  --muted-foreground: oklch(0.69 0.01 150);
-  /* lime to mint: the signature gradient */
-  --lime: oklch(0.9 0.19 118);
-  --primary: oklch(0.84 0.16 155);
-  --primary-foreground: oklch(0.16 0.03 155);
-  --accent: oklch(0.78 0.13 210);
+  /* near black with a green cast, so the volt accent feels native */
+  --background: oklch(0.14 0.01 140);
+  --surface: oklch(0.19 0.012 140);
+  --surface-raised: oklch(0.245 0.014 140);
+  --border: oklch(0.3 0.014 140);
+  --foreground: oklch(0.97 0.004 140);
+  --muted-foreground: oklch(0.7 0.012 140);
+  /* volt: the single signature accent */
+  --volt: oklch(0.94 0.23 122);
+  --volt-dim: oklch(0.72 0.17 122);
+  --volt-foreground: oklch(0.18 0.05 122);
+  --accent: oklch(0.78 0.11 215);
   --gold: oklch(0.85 0.15 90);
   --destructive: oklch(0.68 0.19 25);
   --warning: oklch(0.85 0.15 90);
-  --ring: oklch(0.84 0.16 155 / 55%);
-  /* "below target" bars: muted but still clearly a bar, kept above 3:1
-     against the card surface so a short bar never reads as a gap */
-  --track-filled: oklch(0.55 0.045 150);
+  --ring: oklch(0.94 0.23 122 / 45%);
+  /* "below target" marks: muted but never invisible, stays above 3:1 */
+  --track-filled: oklch(0.55 0.045 140);
 }
 
 @theme inline {
@@ -30,9 +29,13 @@
   --color-border: var(--border);
   --color-foreground: var(--foreground);
   --color-muted-foreground: var(--muted-foreground);
-  --color-lime: var(--lime);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
+  --color-volt: var(--volt);
+  --color-volt-dim: var(--volt-dim);
+  --color-volt-foreground: var(--volt-foreground);
+  /* kept as aliases so existing usages keep working */
+  --color-lime: var(--volt);
+  --color-primary: var(--volt);
+  --color-primary-foreground: var(--volt-foreground);
   --color-accent: var(--accent);
   --color-gold: var(--gold);
   --color-destructive: var(--destructive);
@@ -42,9 +45,9 @@
   --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display);
-  --radius-lg: 1.25rem;
-  --radius-md: 0.75rem;
-  --radius-sm: 0.5rem;
+  --radius-lg: 1.5rem;
+  --radius-md: 1rem;
+  --radius-sm: 0.625rem;
 }
 
 html {
@@ -52,7 +55,26 @@ html {
 }
 
 body {
-  background: var(--background);
+  /* ambient volt glow bleeding in from the edges, fixed so it does not
+     travel with the scroll */
+  background:
+    radial-gradient(
+      70% 45% at 50% -8%,
+      oklch(0.94 0.23 122 / 16%),
+      transparent 70%
+    ),
+    radial-gradient(
+      55% 40% at 108% 12%,
+      oklch(0.94 0.23 122 / 10%),
+      transparent 70%
+    ),
+    radial-gradient(
+      60% 40% at -10% 92%,
+      oklch(0.94 0.23 122 / 8%),
+      transparent 70%
+    ),
+    var(--background);
+  background-attachment: fixed;
   color: var(--foreground);
   font-family: var(--font-body), system-ui, sans-serif;
   overscroll-behavior-y: none;
@@ -80,23 +102,8 @@ h3 {
   font-variant-numeric: tabular-nums;
 }
 
-.gradient-lime {
-  background-image: linear-gradient(
-    100deg,
-    var(--lime) 0%,
-    var(--primary) 100%
-  );
-}
-
-.text-gradient-lime {
-  background-image: linear-gradient(
-    100deg,
-    var(--lime) 0%,
-    var(--primary) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.glow-volt {
+  box-shadow: 0 0 32px -10px var(--volt);
 }
 
 /* Safe areas for the installed PWA on iPhone */

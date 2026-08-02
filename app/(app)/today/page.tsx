@@ -1,19 +1,29 @@
 import { TZDate } from "@date-fns/tz";
 import { format } from "date-fns";
+import { Bell, CheckCheck, Flame, Target } from "lucide-react";
+import Link from "next/link";
 import { getTodayData } from "@/lib/data/today";
 import { OccurrenceList } from "@/components/today/occurrence-list";
 import { ChallengeList } from "@/components/today/challenge-list";
 import { HabitList } from "@/components/today/habit-list";
-import { GradientBar } from "@/components/ui/stat";
+import { RingGauge, StatTile } from "@/components/ui/stat";
 
 export const metadata = { title: "Today" };
 export const dynamic = "force-dynamic";
 
 function greeting(hour: number): string {
-  if (hour < 5) return "Still up?";
+  if (hour < 5) return "Still up";
   if (hour < 12) return "Good morning";
   if (hour < 19) return "Good afternoon";
   return "Good evening";
+}
+
+function statusFor(pct: number, total: number): string {
+  if (total === 0) return "Nothing due";
+  if (pct === 100) return "Complete";
+  if (pct >= 75) return "Almost there";
+  if (pct >= 40) return "On track";
+  return "Just getting started";
 }
 
 export default async function TodayPage({
@@ -25,6 +35,7 @@ export default async function TodayPage({
 
   const localNow = new TZDate(new Date(), data.profile.timezone);
   const dateLabel = format(localNow, "EEEE, MMMM d");
+  const pct = Math.round(data.dayProgress * 100);
 
   const dueCount = data.dueNow.length;
   const doneToday = data.resolved.filter(
@@ -33,46 +44,71 @@ export default async function TodayPage({
   const challengesLeft = data.challenges.filter(
     (c) => c.target !== null && c.log === null
   ).length;
-  const pct = Math.round(data.dayProgress * 100);
+  const name = data.profile.display_name;
 
   return (
-    <div className="flex flex-col gap-6 py-6">
-      <header className="rounded-lg border border-border bg-surface p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-sm text-muted-foreground">{dateLabel}</p>
-            <h1 className="mt-0.5 text-2xl font-bold">
-              {greeting(localNow.getHours())}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {data.totalCount === 0
-                ? "Nothing scheduled today"
-                : pct === 100
-                  ? "Your day is complete"
-                  : pct >= 60
-                    ? "Your day is almost done"
-                    : `${data.doneCount} of ${data.totalCount} closed out`}
-            </p>
-          </div>
-          <p className="metric shrink-0 text-4xl font-bold text-lime">{pct}%</p>
+    <div className="flex flex-col gap-4 py-6">
+      <header className="flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm text-muted-foreground">{dateLabel}</p>
+          <h1 className="mt-0.5 text-3xl font-bold">
+            {greeting(localNow.getHours())}
+            {name ? (
+              <>
+                <br />
+                <span className="text-volt">{name}</span> 👋
+              </>
+            ) : (
+              " 👋"
+            )}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {pct === 100
+              ? "Everything closed out. Nice."
+              : "Ready to beat yesterday?"}
+          </p>
         </div>
-        <GradientBar fraction={data.dayProgress} className="mt-4" />
-        <div className="mt-3 flex flex-wrap gap-2 text-xs font-medium">
-          <span className="rounded-full bg-surface-raised px-3 py-1.5 text-muted-foreground">
-            {dueCount === 0 ? "Nothing due right now" : `${dueCount} due now`}
-          </span>
-          {challengesLeft > 0 && (
-            <span className="rounded-full bg-accent/15 px-3 py-1.5 text-accent">
-              {challengesLeft} challenge{challengesLeft > 1 ? "s" : ""} pending
-            </span>
-          )}
-          {doneToday > 0 && (
-            <span className="rounded-full bg-lime/12 px-3 py-1.5 text-lime">
-              {doneToday} done today
-            </span>
-          )}
-        </div>
+        <Link
+          href="/settings"
+          aria-label="Notification settings"
+          className="grid size-11 shrink-0 place-items-center rounded-full border border-border bg-surface text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <Bell className="size-5" />
+        </Link>
       </header>
+
+      {/* hero: the day as a single dial */}
+      <div className="flex flex-col items-center gap-4 rounded-lg border border-border bg-surface p-6">
+        <RingGauge
+          fraction={data.dayProgress}
+          value={`${pct}%`}
+          caption="Today"
+          status={statusFor(pct, data.totalCount)}
+        />
+        <p className="text-sm text-muted-foreground">
+          {data.doneCount} of {data.totalCount} closed out
+        </p>
+      </div>
+
+      <div className="grid grid-cols-3 gap-3">
+        <StatTile
+          value={dueCount}
+          label="Due now"
+          icon={<Bell />}
+          unit={dueCount === 1 ? "item" : "items"}
+        />
+        <StatTile
+          value={doneToday}
+          label="Done today"
+          icon={<CheckCheck />}
+          unit={doneToday === 1 ? "item" : "items"}
+        />
+        <StatTile
+          value={challengesLeft}
+          label="Challenges left"
+          icon={<Target />}
+        />
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-start">
         <OccurrenceList
@@ -86,6 +122,18 @@ export default async function TodayPage({
           <HabitList habits={data.habits} today={data.today} />
         </div>
       </div>
+
+      {pct === 100 && data.totalCount > 0 && (
+        <div className="flex items-center gap-3 rounded-lg border border-volt/40 bg-volt/8 p-4">
+          <Flame className="size-5 shrink-0 text-volt" />
+          <p className="text-sm">
+            <span className="font-semibold">Perfect day.</span>{" "}
+            <span className="text-muted-foreground">
+              Everything scheduled is closed out.
+            </span>
+          </p>
+        </div>
+      )}
     </div>
   );
 }

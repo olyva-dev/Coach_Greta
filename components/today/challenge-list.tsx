@@ -46,7 +46,7 @@ export function ChallengeList({ challenges, today }: Props) {
   return (
     <section>
       <h2 className="mb-2.5 flex items-center gap-2 text-base font-semibold">
-        <span className="h-4 w-1 rounded-full bg-accent" /> Challenges
+        <span className="h-4 w-1 rounded-full bg-volt" /> Challenges
       </h2>
       <div className="flex flex-col gap-2">
         {challenges.map((item) => {
@@ -58,10 +58,10 @@ export function ChallengeList({ challenges, today }: Props) {
           return (
             <div
               key={challenge.id}
-              className="rounded-xl border border-accent/25 bg-gradient-to-r from-accent/10 to-surface p-3"
+              className="rounded-xl border border-volt/25 bg-gradient-to-r from-volt/10 to-surface p-3"
             >
               <div className="flex items-center gap-3">
-                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-accent/15 text-lg font-bold text-accent">
+                <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-volt/15 text-lg font-bold text-volt">
                   {day}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -90,9 +90,9 @@ export function ChallengeList({ challenges, today }: Props) {
                 )}
               </div>
               {target !== null && (status === null || status === undefined) && (
-                <div className="mt-3 flex items-center gap-3 border-t border-accent/15 pt-3">
+                <div className="mt-3 flex items-center gap-3 border-t border-volt/15 pt-3">
                   <p className="min-w-0 flex-1 text-sm">
-                    <span className="text-2xl font-bold text-accent">
+                    <span className="text-2xl font-bold text-volt">
                       {target}
                     </span>{" "}
                     <span className="text-muted-foreground">

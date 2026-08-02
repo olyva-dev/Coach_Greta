@@ -65,6 +65,10 @@ export interface ProgressData {
   badges: Badge[];
   perfectDays: number;
   bestStreak: number;
+  // habit completion per day for the current week, 0..100
+  weekSeries: number[];
+  weekLabels: string[];
+  insight: string;
 }
 
 export async function getProgressData(): Promise<ProgressData> {
@@ -254,6 +258,59 @@ export async function getProgressData(): Promise<ProgressData> {
   });
   const bestStreak = habits.reduce((max, h) => Math.max(max, h.best), 0);
 
+  // this week's habit completion, one point per day up to today
+  const weekSeries: number[] = [];
+  const weekLabels: string[] = [];
+  {
+    let cursor = parseISO(weekStart);
+    const end = parseISO(today);
+    while (cursor <= end) {
+      const date = format(cursor, "yyyy-MM-dd");
+      let scheduled = 0;
+      let wins = 0;
+      for (const h of habits) {
+        const cell = h.cells.find((c) => c.date === date);
+        if (!cell || cell.outcome === "neutral" || cell.outcome === "before")
+          continue;
+        scheduled += 1;
+        if (cell.outcome === "win") wins += 1;
+      }
+      weekSeries.push(scheduled === 0 ? 0 : Math.round((wins / scheduled) * 100));
+      weekLabels.push(format(cursor, "EEEEE"));
+      cursor = addDays(cursor, 1);
+    }
+  }
+
+  // one honest, computed line about the week
+  const insight = (() => {
+    const numeric = habits.filter((h) => h.habit.kind === "numeric");
+    if (numeric.length > 0) {
+      const h = numeric[0];
+      const logged = h.recentAmounts.filter((a) => a > 0);
+      if (logged.length >= 3) {
+        const avg = Math.round(
+          logged.reduce((s, a) => s + a, 0) / logged.length
+        );
+        const target = h.habit.target_value ?? 0;
+        const diff = avg - target;
+        return diff >= 0
+          ? `${h.habit.name} is averaging ${avg.toLocaleString()}, ${diff.toLocaleString()} above target.`
+          : `${h.habit.name} is averaging ${avg.toLocaleString()}, ${Math.abs(diff).toLocaleString()} short of target.`;
+      }
+    }
+    const leader = habits.reduce(
+      (best, h) => (h.current > (best?.current ?? -1) ? h : best),
+      habits[0]
+    );
+    if (leader && leader.current >= 3) {
+      return `${leader.habit.name} is on a ${leader.current} day streak, your best is ${leader.best}.`;
+    }
+    if (perfectDays > 0) {
+      return `You have logged ${perfectDays} perfect day${perfectDays > 1 ? "s" : ""} so far. Keep the checklist closed out.`;
+    }
+    return "Log a few days and this is where the patterns will show up.";
+  })();
+
   return {
     profile,
     today,
@@ -266,5 +323,8 @@ export async function getProgressData(): Promise<ProgressData> {
     badges: streakBadges(bestStreak),
     perfectDays,
     bestStreak,
+    weekSeries,
+    weekLabels,
+    insight,
   };
 }

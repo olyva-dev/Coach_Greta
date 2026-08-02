@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 export async function updateProfile(input: {
+  displayName: string | null;
   timezone: string;
   quietHoursStart: string | null; // "HH:mm" or null
   quietHoursEnd: string | null;
@@ -24,6 +25,7 @@ export async function updateProfile(input: {
   const { error } = await supabase
     .from("profiles")
     .update({
+      display_name: input.displayName,
       timezone: input.timezone,
       quiet_hours_start: input.quietHoursStart
         ? `${input.quietHoursStart}:00`
