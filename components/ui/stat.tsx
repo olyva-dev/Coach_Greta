@@ -2,6 +2,9 @@ import { cn } from "@/lib/utils";
 
 // Big number, small unit, label underneath, optional visual in the body.
 // The layout the reference dashboard uses for every metric.
+// The value stays in text ink. These tiles are unrelated metrics, not a
+// series, so a hue per tile would encode nothing; the accent rides a small
+// marker beside the label instead of colouring the number itself.
 export function StatTile({
   value,
   unit,
@@ -17,12 +20,12 @@ export function StatTile({
   children?: React.ReactNode;
   className?: string;
 }) {
-  const valueColor = {
-    lime: "text-lime",
-    primary: "text-primary",
-    accent: "text-accent",
-    gold: "text-gold",
-    plain: "text-foreground",
+  const markerColor = {
+    lime: "bg-lime",
+    primary: "bg-primary",
+    accent: "bg-accent",
+    gold: "bg-gold",
+    plain: "bg-muted-foreground",
   }[accent];
 
   return (
@@ -34,14 +37,20 @@ export function StatTile({
     >
       <div>
         <p className="flex items-baseline gap-1.5">
-          <span className={cn("metric text-3xl font-bold", valueColor)}>
+          <span className="metric text-3xl font-bold text-foreground">
             {value}
           </span>
           {unit && (
             <span className="text-xs text-muted-foreground">{unit}</span>
           )}
         </p>
-        <p className="mt-1 text-sm text-muted-foreground">{label}</p>
+        <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+          <span
+            className={cn("size-1.5 shrink-0 rounded-full", markerColor)}
+            aria-hidden="true"
+          />
+          {label}
+        </p>
       </div>
       {children}
     </div>
@@ -73,7 +82,11 @@ export function BarSpark({
             key={i}
             className={cn(
               "min-h-[3px] flex-1 rounded-[2px]",
-              hit ? "bg-lime" : v > 0 ? "bg-primary/35" : "bg-surface-raised"
+              hit
+                ? "bg-lime"
+                : v > 0
+                  ? "bg-track-filled"
+                  : "bg-surface-raised"
             )}
             style={{ height: `${Math.max(6, (v / max) * 100)}%` }}
           />
@@ -128,10 +141,14 @@ export function ArcGauge({
           );
         })}
       </svg>
-      {/* sits in the hollow of the arc, clear of the segment ends */}
-      <div className="absolute inset-x-0 bottom-3 flex flex-col items-center leading-none">
+      {/* centred in the hollow: below the arc's inner edge, above the
+          segment ends that sit on the baseline at y = cy */}
+      <div
+        className="absolute inset-x-0 flex flex-col items-center leading-none"
+        style={{ top: cy - 46 }}
+      >
         {caption && (
-          <span className="mb-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          <span className="mb-1.5 text-[10px] uppercase tracking-wide text-muted-foreground">
             {caption}
           </span>
         )}

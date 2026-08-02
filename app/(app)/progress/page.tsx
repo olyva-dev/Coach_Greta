@@ -242,13 +242,14 @@ export default async function ProgressPage() {
                         className="mt-1.5 h-1.5"
                       />
                     </div>
-                    <p className="w-20 text-right">
+                    <p className="w-24 shrink-0 text-right">
                       {adherencePct !== null ? (
                         <>
-                          <span className="metric text-base font-bold">
+                          {/* stacked in a column, so these align on tabular figures */}
+                          <span className="metric metric-column text-base font-bold">
                             {adherencePct}%
                           </span>
-                          <span className="block text-[10px] text-muted-foreground">
+                          <span className="block whitespace-nowrap text-[10px] text-muted-foreground">
                             {done} done · {missed} missed
                           </span>
                         </>

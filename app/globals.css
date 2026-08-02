@@ -18,6 +18,9 @@
   --destructive: oklch(0.68 0.19 25);
   --warning: oklch(0.85 0.15 90);
   --ring: oklch(0.84 0.16 155 / 55%);
+  /* "below target" bars: muted but still clearly a bar, kept above 3:1
+     against the card surface so a short bar never reads as a gap */
+  --track-filled: oklch(0.55 0.045 150);
 }
 
 @theme inline {
@@ -35,6 +38,7 @@
   --color-destructive: var(--destructive);
   --color-warning: var(--warning);
   --color-ring: var(--ring);
+  --color-track-filled: var(--track-filled);
   --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
   --font-display: var(--font-display);
@@ -61,12 +65,19 @@ h3 {
   letter-spacing: -0.03em;
 }
 
-/* Big metric numbers: display face, tight, tabular so they do not jitter */
+/* Big standalone numbers. Proportional figures on purpose: tabular gives
+   every digit the width of a zero, which makes values like 121 look loose
+   at display sizes. */
 .metric {
   font-family: var(--font-display), system-ui, sans-serif;
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: proportional-nums;
   letter-spacing: -0.04em;
   line-height: 1;
+}
+
+/* Numbers that stack in a column and must align vertically */
+.metric-column {
+  font-variant-numeric: tabular-nums;
 }
 
 .gradient-lime {
