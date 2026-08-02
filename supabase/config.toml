@@ -1,0 +1,14 @@
+# Minimal Supabase CLI config. `supabase link` fills in the rest.
+project_id = "coach-greta"
+
+[auth]
+# Single user app: signup happens once, manually, from the dashboard
+enable_signup = false
+
+[functions.send-due-reminders]
+# Authenticated by the x-cron-secret header, not by a user JWT
+verify_jwt = false
+
+[functions.notification-action]
+# Authenticated by a per notification HMAC token
+verify_jwt = false
