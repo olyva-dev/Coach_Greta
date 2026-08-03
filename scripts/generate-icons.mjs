@@ -1,38 +1,76 @@
-// Generates PWA icons from an inline SVG. Run: node scripts/generate-icons.mjs
-// Uses sharp, which ships as a Next.js dependency.
+// Generates the app mark and every icon size from one vector source.
+// Run: node scripts/generate-icons.mjs
+//
+// The mark is a "G" built as a progress ring: the ring is the app's core
+// visual (day completion, session timer), and the gap plus crossbar read as
+// a G. Geometry only, no text and no emoji, so it stays sharp at 16px.
 import sharp from "sharp";
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 
-// Shapes only, no text: a progress ring with a checkmark, dark background
-function svg(padRatio) {
-  const s = 512;
-  const pad = s * padRatio;
-  const c = s / 2;
-  const r = s / 2 - pad - 40;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}">
-  <rect width="${s}" height="${s}" rx="${padRatio > 0 ? 0 : 116}" fill="#131316"/>
-  <circle cx="${c}" cy="${c}" r="${r}" fill="none" stroke="#1f8a6d" stroke-width="34" opacity="0.35"/>
-  <path d="M ${c} ${c - r} A ${r} ${r} 0 1 1 ${c - r * 0.866} ${c + r * 0.5}"
-        fill="none" stroke="#34d39e" stroke-width="34" stroke-linecap="round"/>
-  <path d="M ${c - r * 0.42} ${c + r * 0.05} l ${r * 0.3} ${r * 0.3} l ${r * 0.55} ${-r * 0.62}"
-        fill="none" stroke="#e8e8ec" stroke-width="44" stroke-linecap="round" stroke-linejoin="round"/>
+const VOLT = "#d2ff00";
+const DARK = "#111510";
+
+// Ring geometry on a 64x64 canvas
+const C = 32;
+const R = 21;
+const STROKE = 9;
+const rad = (deg) => (deg * Math.PI) / 180;
+const pt = (deg) => [
+  (C + R * Math.cos(rad(deg))).toFixed(2),
+  (C + R * Math.sin(rad(deg))).toFixed(2),
+];
+
+// Arc sweeps counter-clockwise from the upper right, all the way around,
+// stopping short on the lower right to leave the G's opening.
+const [sx, sy] = pt(-34);
+const [ex, ey] = pt(34);
+const barInnerX = (C + 6).toFixed(2);
+
+const markPath = [
+  `M ${sx} ${sy}`,
+  `A ${R} ${R} 0 1 0 ${ex} ${ey}`, // large arc, counter-clockwise
+  `L ${ex} ${C}`, // up into the crossbar
+  `L ${barInnerX} ${C}`, // crossbar pointing back to centre
+].join(" ");
+
+function mark({ background, padding = 0 }) {
+  const scale = (64 - padding * 2) / 64;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  ${background ? `<rect width="64" height="64" rx="14" fill="${background}"/>` : ""}
+  <g transform="translate(${padding} ${padding}) scale(${scale})">
+    <path d="${markPath}" fill="none" stroke="${VOLT}" stroke-width="${STROKE}"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>`;
+}
+
+// Maskable icons get a safe zone: Android crops up to 20% off the edges
+function maskable() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <rect width="64" height="64" fill="${DARK}"/>
+  <g transform="translate(11 11) scale(0.656)">
+    <path d="${markPath}" fill="none" stroke="${VOLT}" stroke-width="${STROKE}"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
 </svg>`;
 }
 
 await mkdir("public/icons", { recursive: true });
 
-const normal = Buffer.from(svg(0));
-const maskable = Buffer.from(svg(0.1));
+// Favicon: SVG, so it stays crisp at every size. Next.js App Router serves
+// app/icon.svg as the favicon automatically.
+await writeFile("app/icon.svg", mark({ background: DARK }));
 
-await sharp(normal).resize(512, 512).png().toFile("public/icons/icon-512.png");
-await sharp(normal).resize(192, 192).png().toFile("public/icons/icon-192.png");
-await sharp(normal)
-  .resize(180, 180)
-  .png()
-  .toFile("public/icons/apple-touch-icon.png");
-await sharp(maskable)
-  .resize(512, 512)
-  .png()
-  .toFile("public/icons/icon-maskable-512.png");
+// In-app logo, transparent so it inherits whatever sits behind it
+await writeFile("public/icons/mark.svg", mark({ background: null }));
 
-console.log("icons written to public/icons");
+const rounded = Buffer.from(mark({ background: DARK }));
+const flat = Buffer.from(maskable());
+
+await sharp(rounded).resize(512, 512).png().toFile("public/icons/icon-512.png");
+await sharp(rounded).resize(192, 192).png().toFile("public/icons/icon-192.png");
+await sharp(flat).resize(512, 512).png().toFile("public/icons/icon-maskable-512.png");
+// iOS never rounds its own corners for web apps, so ship the rounded square
+await sharp(rounded).resize(180, 180).png().toFile("app/apple-icon.png");
+
+console.log("wrote app/icon.svg, app/apple-icon.png, public/icons/*");

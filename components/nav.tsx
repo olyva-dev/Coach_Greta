@@ -9,6 +9,7 @@ import {
   Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/logo";
 
 const items = [
   { href: "/today", label: "Today", icon: CalendarCheck },
@@ -52,8 +53,8 @@ export function SideNav() {
   return (
     <nav className="hidden md:flex md:w-56 md:flex-col md:gap-1 md:border-r md:border-border md:p-4 md:shrink-0">
       <div className="flex items-center gap-2.5 px-3 pb-8 pt-2">
-        <span className="grid size-9 place-items-center rounded-xl bg-volt/15 text-lg">
-          🏃‍♀️
+        <span className="grid size-9 place-items-center rounded-xl bg-volt/15 text-volt">
+          <Logo size={20} />
         </span>
         <span className="font-bold [font-family:var(--font-display)] tracking-tight">
           Coach Greta

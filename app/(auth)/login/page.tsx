@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Logo } from "@/components/logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,7 +38,11 @@ export default function LoginPage() {
     <main className="flex min-h-dvh flex-col items-center justify-center px-6 pb-safe">
       <div className="w-full max-w-sm animate-fade-in-up">
         <div className="mb-8 text-center">
-          <div className="text-4xl mb-3">🏃‍♀️</div>
+          <div className="mb-4 flex justify-center">
+            <span className="grid size-16 place-items-center rounded-2xl bg-volt/12 text-volt">
+              <Logo size={38} />
+            </span>
+          </div>
           <h1 className="text-2xl font-bold">Coach Greta</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Your habits, on schedule

@@ -31,9 +31,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "Coach Greta",
   },
-  icons: {
-    apple: "/icons/apple-touch-icon.png",
-  },
+  // icons come from app/icon.svg and app/apple-icon.png automatically
   robots: {
     index: false,
     follow: false,
