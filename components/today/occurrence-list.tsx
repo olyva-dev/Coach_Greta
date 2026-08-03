@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useOptimistic, useRef, useTransition } from "react";
-import { Check, Clock, RotateCcw, X } from "lucide-react";
+import Link from "next/link";
+import { Check, Clock, Play, RotateCcw, X } from "lucide-react";
 import { markOccurrence, type OccurrenceAction } from "@/app/actions/occurrences";
 import type { TodayOccurrence } from "@/lib/domain/view";
 import type { OccurrenceStatus } from "@/lib/db/types";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -103,21 +104,37 @@ export function OccurrenceList({ dueNow, laterToday, resolved, focusId }: Props)
                         ` · reminded ${occurrence.notify_count} times`}
                     </p>
                   </div>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    aria-label="Snooze"
-                    onClick={() => mark(occurrence.id, "snooze")}
-                  >
-                    <Clock />
-                  </Button>
-                  <Button
-                    size="icon"
-                    aria-label="Done"
-                    onClick={() => mark(occurrence.id, "done")}
-                  >
-                    <Check />
-                  </Button>
+                  {/* a guided reminder opens its module, where finishing the
+                      session closes this occurrence */}
+                  {reminder.module_key ? (
+                    <Link
+                      href={`/modules/${reminder.module_key}?occurrence=${occurrence.id}`}
+                      className={cn(
+                        buttonVariants({ size: "sm" }),
+                        "gap-1.5"
+                      )}
+                    >
+                      <Play className="size-3.5 fill-current" /> Start
+                    </Link>
+                  ) : (
+                    <>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        aria-label="Snooze"
+                        onClick={() => mark(occurrence.id, "snooze")}
+                      >
+                        <Clock />
+                      </Button>
+                      <Button
+                        size="icon"
+                        aria-label="Done"
+                        onClick={() => mark(occurrence.id, "done")}
+                      >
+                        <Check />
+                      </Button>
+                    </>
+                  )}
                 </div>
               );
             })}

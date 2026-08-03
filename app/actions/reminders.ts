@@ -18,6 +18,7 @@ export interface ReminderInput {
   retryIntervalMinutes: number;
   maxRetries: number;
   snoozeMinutes: number;
+  moduleKey: string | null;
 }
 
 function toRow(input: ReminderInput) {
@@ -36,6 +37,7 @@ function toRow(input: ReminderInput) {
     retry_interval_minutes: input.retryIntervalMinutes,
     max_retries: input.maxRetries,
     snooze_minutes: input.snoozeMinutes,
+    module_key: input.moduleKey,
   };
 }
 

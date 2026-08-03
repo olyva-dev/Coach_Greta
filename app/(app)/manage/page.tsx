@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Bell, ChevronRight, ListChecks, TrendingUp } from "lucide-react";
+import { Bell, ChevronRight, Dumbbell, ListChecks, TrendingUp } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { MODULES } from "@/lib/modules/registry";
 
 export const metadata = { title: "Manage" };
 export const dynamic = "force-dynamic";
@@ -44,18 +45,26 @@ export default async function ManagePage() {
       description: "Daily yes or no checklist",
       count: hab.count ?? 0,
     },
+    {
+      href: "/modules",
+      icon: Dumbbell,
+      title: "Guided modules",
+      description: "Exercises with step by step coaching",
+      count: MODULES.length,
+    },
   ];
 
   const accents = [
-    { chip: "bg-primary/15 text-primary", border: "hover:border-primary/40" },
-    { chip: "bg-accent/15 text-accent", border: "hover:border-accent/40" },
+    { chip: "bg-volt/15 text-volt", border: "hover:border-volt/40" },
+    { chip: "bg-volt/15 text-volt", border: "hover:border-volt/40" },
     { chip: "bg-gold/15 text-gold", border: "hover:border-gold/40" },
+    { chip: "bg-accent/15 text-accent", border: "hover:border-accent/40" },
   ];
 
   return (
     <div className="flex flex-col gap-6 py-6">
       <h1 className="text-3xl font-bold">Manage</h1>
-      <div className="grid gap-3 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-2">
         {sections.map(({ href, icon: Icon, title, description, count }, i) => (
           <Link
             key={href}

@@ -24,6 +24,7 @@ function makeReminder(overrides: Partial<Reminder> = {}): Reminder {
     retry_interval_minutes: 15,
     max_retries: 3,
     snooze_minutes: 10,
+    module_key: null,
     status: "active",
     sort_order: 0,
     created_at: "",

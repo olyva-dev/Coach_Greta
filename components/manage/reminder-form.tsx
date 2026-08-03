@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DaysOfWeekPicker, FormRow } from "@/components/manage/shared";
+import { MODULES } from "@/lib/modules/registry";
 
 interface Props {
   reminder?: Reminder;
@@ -54,6 +55,7 @@ export function ReminderForm({ reminder, trigger }: Props) {
   const [snoozeMinutes, setSnoozeMinutes] = useState(
     reminder?.snooze_minutes ?? 10
   );
+  const [moduleKey, setModuleKey] = useState(reminder?.module_key ?? "");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -72,6 +74,7 @@ export function ReminderForm({ reminder, trigger }: Props) {
       retryIntervalMinutes: retryInterval,
       maxRetries,
       snoozeMinutes,
+      moduleKey: moduleKey || null,
     };
     startTransition(async () => {
       try {
@@ -231,6 +234,26 @@ export function ReminderForm({ reminder, trigger }: Props) {
               )}
             </div>
           )}
+
+          <FormRow label="Guided module">
+            <Select
+              value={moduleKey}
+              onChange={(e) => setModuleKey(e.target.value)}
+            >
+              <option value="">None, just a reminder</option>
+              {MODULES.map((m) => (
+                <option key={m.key} value={m.key}>
+                  {m.emoji} {m.name}
+                </option>
+              ))}
+            </Select>
+            {moduleKey && (
+              <p className="text-xs text-muted-foreground">
+                This reminder opens a guided session instead of a done button.
+                Finishing the session marks it done.
+              </p>
+            )}
+          </FormRow>
 
           <FormRow label="Snooze length (minutes)">
             <Input

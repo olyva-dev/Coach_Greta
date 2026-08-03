@@ -45,6 +45,7 @@ export type Reminder = {
   retry_interval_minutes: number;
   max_retries: number;
   snooze_minutes: number;
+  module_key: string | null;
   status: ItemStatus;
   sort_order: number;
   created_at: string;
@@ -131,6 +132,25 @@ export type HabitLog = {
   logged_at: string;
 }
 
+export type SessionStatus = "in_progress" | "completed" | "abandoned";
+
+export type ExerciseSession = {
+  id: string;
+  user_id: string;
+  module_key: string;
+  level_key: string;
+  local_date: string;
+  started_at: string;
+  completed_at: string | null;
+  status: SessionStatus;
+  reps_completed: number;
+  reps_target: number;
+  sets_completed: number;
+  sets_target: number;
+  duration_seconds: number;
+  occurrence_id: string | null;
+};
+
 export type PushSubscriptionRow = {
   id: string;
   user_id: string;
@@ -208,6 +228,16 @@ export type Database = {
         HabitLog,
         "user_id" | "habit_id" | "local_date" | "value",
         "id"
+      >;
+      exercise_sessions: TableDef<
+        ExerciseSession,
+        | "user_id"
+        | "module_key"
+        | "level_key"
+        | "local_date"
+        | "reps_target"
+        | "sets_target",
+        "id" | "started_at"
       >;
       push_subscriptions: TableDef<
         PushSubscriptionRow,

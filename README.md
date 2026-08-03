@@ -18,9 +18,22 @@ Three kinds of items, all managed from inside the app:
   repeating cycle like "3 days on, 1 off". Avoid habits count as a win when
   you never check them.
 
+* **Guided modules**: some items are not "did you do it yes or no", they are
+  a coached session. A module ships a protocol (timed phases, reps, sets at
+  several levels), a how-to, the mistakes that make it useless, its medical
+  sources, and a player that counts you through every rep on an animated
+  ring. Kegel and breathing ship today. A reminder can point at a module, in
+  which case it opens the session instead of a done button, and finishing
+  the session closes the reminder.
+
 Everything you close out earns XP, which drives a level, streak badges and a
 count of perfect days. It is derived from your real logs, so it can never
 drift out of sync with the history.
+
+Module protocols live in `lib/modules/` as code, not in the database, on
+purpose: they are medical content that should be reviewed and versioned with
+the app rather than edited at runtime. Adding a module means adding one file
+and listing it in the registry.
 
 Reminders fire even when the app is closed on every device: pg_cron inside
 Supabase calls an Edge Function every minute, which claims due occurrences
