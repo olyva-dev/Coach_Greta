@@ -90,15 +90,14 @@ This creates the schema, RLS policies, the reminder engine, enables
 ### 3. Store the cron secrets in Vault
 
 The per minute job reads its target URL and secret from Supabase Vault at
-run time. In the SQL editor:
+run time. Run step 4 first: the generator prints the exact `cron_secret`
+to paste here, and the same value goes to the Edge Functions, so they have
+to match.
 
 ```sql
 select vault.create_secret('https://<project-ref>.supabase.co', 'project_url');
-select vault.create_secret('<long random string>', 'cron_secret');
+select vault.create_secret('<cron_secret printed by step 4>', 'cron_secret');
 ```
-
-Generate the random string with `openssl rand -base64 32`. Keep it, you
-need the same value in step 5.
 
 ### 4. Generate VAPID keys
 
@@ -106,22 +105,28 @@ need the same value in step 5.
 node scripts/generate-vapid-keys.mjs
 ```
 
-Copy the two outputs somewhere safe. The keys must never change once
-devices are subscribed, or every subscription breaks.
+This writes `supabase/.env.secrets` with the VAPID pair and the two random
+secrets the Edge Functions need, and prints the one public value that goes
+to Vercel. The file is gitignored. Passing the key JSON on a command line
+is a reliable way to fight shell quoting, so step 5 reads the file instead.
+
+The keys must never change once devices are subscribed, or every
+subscription breaks.
 
 ### 5. Deploy the Edge Functions
 
-```bash
-supabase secrets set \
-  SERVICE_KEY='sb_secret_...' \
-  CRON_SECRET='<same value as the cron_secret vault entry>' \
-  ACTION_TOKEN_SECRET="$(openssl rand -base64 32)" \
-  VAPID_KEYS_JSON='<from step 4, the single line JSON>' \
-  VAPID_SUBJECT='mailto:you@example.com'
+Open `supabase/.env.secrets` and replace `SERVICE_KEY` with your
+`sb_secret_...` key, then apply the whole file at once:
 
+```bash
+supabase secrets set --env-file supabase/.env.secrets
 supabase functions deploy send-due-reminders
 supabase functions deploy notification-action
 ```
+
+Delete the file once the secrets are set. Note the `cron_secret` printed in
+step 4 has to match the Vault entry from step 3, so create the Vault
+secrets after running the generator, not before.
 
 `supabase/config.toml` already sets `verify_jwt = false` for both: the
 first authenticates with the cron secret (or a user JWT for test pushes),
