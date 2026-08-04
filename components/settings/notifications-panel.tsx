@@ -17,6 +17,7 @@ import {
   detectPushSupport,
   subscribeThisDevice,
   unsubscribeThisDevice,
+  vapidKeyProblem,
   type PushSupport,
 } from "@/lib/push/subscribe";
 import { createClient } from "@/lib/supabase/client";
@@ -43,6 +44,10 @@ export function NotificationsPanel({
     emptySubscribe,
     detectPushSupport,
     (): PushSupport => "unsupported"
+  );
+
+  const keyProblem = vapidKeyProblem(
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
   );
 
   useEffect(() => {
@@ -139,8 +144,19 @@ export function NotificationsPanel({
           </div>
         )}
 
+        {/* a misconfigured key is a deployment problem, not something the
+            user can fix by tapping the button again */}
+        {keyProblem && (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2.5 text-sm">
+            <p className="font-medium text-destructive">
+              Push is not configured on this deployment
+            </p>
+            <p className="mt-1 text-muted-foreground">{keyProblem}</p>
+          </div>
+        )}
+
         {support === "supported" && !thisDeviceSubscribed && (
-          <Button onClick={enable} disabled={pending}>
+          <Button onClick={enable} disabled={pending || keyProblem !== null}>
             Enable notifications on this device
           </Button>
         )}
